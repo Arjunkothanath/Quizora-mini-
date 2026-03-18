@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="quiz-header">
+    <span class="question-counter">Question {{ qno }} of 10</span>
+</div>
+
+<form method="POST">
+    <div class="question-text">
+        <strong>{{ q['question'] }}</strong>
+    </div>
+
+    {% if q.get('code_snippet') %}
+    <div style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 8px; font-family: 'Consolas', monospace; overflow-x: auto; margin-bottom: 1.5rem; text-align: left; white-space: pre-wrap; font-size: 0.9rem; color: #e2e8f0; border: 1px solid var(--glass-border);">
+{{ q.get('code_snippet') }}
+    </div>
+    {% endif %}
+
+    <div class="options-grid">
+        {% for option in q['options'] %}
+        <label class="option-btn">
+            <input type="radio" name="answer" value="{{ option }}" required>
+            <span>{{ option }}</span>
+        </label>
+        {% endfor %}
+    </div>
+
+    <button type="submit" class="btn-primary">
+        {% if qno == 10 %}Submit Quiz{% else %}Next Question{% endif %}
+    </button>
+</form>
+{% endblock %}

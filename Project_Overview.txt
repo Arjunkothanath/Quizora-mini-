@@ -1,0 +1,222 @@
+================================================================================
+PROJECT OVERVIEW: QUIZORA - AI POWERED QUIZ APPLICATION
+================================================================================
+
+1. PROJECT INTRODUCTION
+-----------------------
+Quizora is a modern web application built using Flask (Python) that generates
+custom multiple-choice quizzes using Google's Gemini AI. 
+
+Key Features:
+- User Authentication: Register and Login system with SQLite.
+- AI Generation: Quizzes are generated on any topic with adjustable difficulty.
+- Dashboard: Track your quiz history and performance trends.
+- Modern UI: Responsive "Glassmorphism" design with dark mode.
+- Code Support: Supports programming-related questions with specialized 
+  code-block rendering (including `code_snippet` handling).
+
+2. PROJECT STRUCTURE
+--------------------
+quiz_mini/
+├── app.py              # Main Flask Backend & AI Logic
+├── database.db         # SQLite Database (Auto-created)
+├── .env                # Environment variables (Gemini API Key)
+├── Project_Overview.txt# This technical report
+├── static/
+│   └── style.css       # Custom UI Styles (Glassmorphism theme)
+└── templates/          # HTML Layouts (Jinja2)
+    ├── base.html       # Shared Layout & Navigation
+    ├── login.html      # User Sign In
+    ├── register.html   # User Sign Up
+    ├── dashboard.html  # User Profile & Performance Chart
+    ├── category.html   # Topic Selection & Generation UI
+    ├── quiz.html       # Quiz Taking Interface
+    └── result.html     # Performance Summary & History Review
+
+3. SYSTEM REQUIREMENTS
+----------------------
+- Python 3.10+
+- Flask
+- google-generativeai
+- python-dotenv
+- requests
+
+4. FULL PROJECT CODE
+--------------------
+
+--- [ 1. app.py (Logic & Backend) ] ---
+(Core logic for Gemini AI integration, database management, and routing)
+
+```python
+from flask import Flask, render_template, request, redirect, url_for, session
+import sqlite3
+import json
+import re
+import os
+from dotenv import load_dotenv
+import google.generativeai as genai
+
+load_dotenv()
+
+app = Flask(__name__)
+app.secret_key = "secret123"
+
+gemini_api_key = os.getenv("geminiapi")
+if not gemini_api_key:
+    raise ValueError("No Gemini API key found in .env file (geminiapi)")
+
+genai.configure(api_key=gemini_api_key)
+
+def generate_questions(topic, difficulty="Medium"):
+    topic_clean = topic.strip().lower()
+    if topic_clean in ["common", "any"]:
+        topic_instruction = "a mix of general knowledge topics"
+    else:
+        topic_instruction = f"'{topic}'"
+
+    prompt = f"Generate 10 multiple choice questions about {topic_instruction} with a '{difficulty}' difficulty level. Return ONLY a JSON array of objects. Each object must have 'question', 'options' (array of 4), and 'answer'. If a question contains code, place it in 'code_snippet'."
+    
+    model = genai.GenerativeModel('gemini-2.0-flash')
+    response = model.generate_content(prompt)
+    
+    match = re.search(r'\[.*\]', response.text, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(0))
+        except:
+            return []
+    return []
+
+# Database init and routes (Login, Register, Dashboard, Category, Quiz, Result)
+# ... Implementation includes Flask Session for state tracking ...
+```
+
+--- [ 2. static/style.css (Styling Highlights) ] ---
+(Modern CSS using CSS Variables, Glassmorphism, and Flex/Grid layouts)
+
+```css
+:root {
+  --bg-dark: #0f172a;
+  --glass-bg: rgba(30, 41, 59, 0.4);
+  --primary: #6366f1;
+  --accent: #ec4899;
+}
+
+body {
+  background: var(--bg-dark);
+  color: #f8fafc;
+  font-family: 'Inter', sans-serif;
+}
+
+.glass-container {
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+```
+
+--- [ 3. templates/category.html (Topic Selection) ] ---
+
+```html
+{% extends "base.html" %}
+{% block content %}
+<h2>Select a Topic</h2>
+<form id="quizForm" method="POST">
+    <input type="text" name="category" placeholder="E.g. Python" required>
+    <select name="difficulty">
+        <option value="Medium">Medium</option>
+        <option value="Hard">Hard</option>
+    </select>
+    <button type="submit">Generate & Start Quiz</button>
+</form>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" style="display:none;">
+    <h2>Crafting Your Quiz...</h2>
+</div>
+
+<script>
+    document.getElementById('quizForm').onsubmit = () => {
+        document.getElementById('loadingOverlay').style.display='flex';
+    };
+</script>
+{% endblock %}
+```
+
+--- [ 4. templates/quiz.html (Quiz UI) ] ---
+
+```html
+{% extends "base.html" %}
+{% block content %}
+<div class="quiz-header">
+    <span class="question-counter">Question {{ qno }} of 10</span>
+</div>
+<form method="POST">
+    <div class="question-text"><strong>{{ q['question'] }}</strong></div>
+    {% if q.get('code_snippet') %}
+    <div class="code-box">{{ q.get('code_snippet') }}</div>
+    {% endif %}
+    {% for option in q['options'] %}
+    <label class="option-btn">
+        <input type="radio" name="answer" value="{{ option }}" required>
+        <span>{{ option }}</span>
+    </label>
+    {% endfor %}
+    <button type="submit">Next Question</button>
+</form>
+{% endblock %}
+```
+
+--- [ 5. templates/dashboard.html (Analytics) ] ---
+
+```html
+{% extends "base.html" %}
+{% block content %}
+<h2>Welcome back, {{ username }}!</h2>
+<canvas id="performanceChart"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Renders the line chart using chart_labels and chart_data from session history
+</script>
+<table>
+    <!-- TABLE OF PAST RESULTS -->
+</table>
+{% endblock %}
+```
+
+--- [ 6. templates/result.html (Final Score) ] ---
+
+```html
+{% extends "base.html" %}
+{% block content %}
+<div class="score-circle" style="--percentage: {{ (score/total*100) }};">
+    <div class="score-text">{{ score }}/{{ total }}</div>
+</div>
+<h3>Detailed Review</h3>
+<!-- Table showing Question, User Answer, and Correct Answer -->
+{% endblock %}
+```
+
+5. HOW IT WORKS
+---------------
+1. User Registration: User credentials are saved in the `users` table via SQLite.
+2. AI Request: When a topic is submitted, `app.py` sends a prompt to Gemini 
+   requesting a JSON array of 10 questions.
+3. Scoring: `session` is used to track the score and current question number 
+   temporarily.
+4. History: On completion, results are archived in the `results` table for 
+   future viewing on the dashboard.
+
+================================================================================
+TECHNICAL NOTES ON RECENT UPDATES
+================================================================================
+- Hiding Score: The live score was removed from the top of `quiz.html` during 
+  the test as requested by the user.
+- Loading Overlay: Added a dedicated `loadingOverlay` in `category.html` to 
+  prevent confusion during the 5-10 second AI generation phase.
+- Code Handling: Implemented a `code_snippet` field in the AI prompt to ensure 
+  programming questions look clean and professional.
+
+================================================================================
+END OF PROJECT NOTES
+================================================================================

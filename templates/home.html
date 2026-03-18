@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home-content">
+    <h1>Welcome to Quizora</h1>
+    <p>Test your knowledge with AI-generated questions across multiple categories. Challenge yourself and track your progress!</p>
+
+    <div class="action-grid">
+        <a href="{{ url_for('category') }}" class="action-card">
+            <i class="fa-solid fa-rocket"></i>
+            <h3>Start Quiz</h3>
+            <p>Dive into a new challenge</p>
+        </a>
+
+        <a href="{{ url_for('dashboard') }}" class="action-card">
+            <i class="fa-solid fa-chart-pie"></i>
+            <h3>Dashboard</h3>
+            <p>View your past results</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

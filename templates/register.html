@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-header">
+    <h2>Create an Account</h2>
+</div>
+
+<form method="POST">
+    <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-input" required placeholder="Choose a username">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-input" required placeholder="Create a strong password">
+    </div>
+
+    <button type="submit" class="btn-primary">Sign Up</button>
+</form>
+
+<div class="auth-links">
+    <p>Already have an account? <a href="{{ url_for('login') }}">Log In</a></p>
+</div>
+{% endblock %}

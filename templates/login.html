@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-header">
+    <h2>Welcome Back!</h2>
+</div>
+
+<!-- Display error if any -->
+{% set messages = get_flashed_messages() %}
+{% if messages %}
+    <div style="color: var(--danger); background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(239, 68, 68, 0.2);">
+        {{ messages[0] }}
+    </div>
+{% endif %}
+
+<form method="POST">
+    <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-input" required placeholder="Enter your username">
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-input" required placeholder="Enter your password">
+    </div>
+    
+    <button type="submit" class="btn-primary">Login</button>
+</form>
+
+<div class="auth-links">
+    <p>Don't have an account? <a href="{{ url_for('register') }}">Sign Up</a></p>
+</div>
+{% endblock %}

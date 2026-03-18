@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block container_class %}wide-container{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 2rem; margin-bottom: 2rem; gap: 1rem;">
+    <div>
+        <h2 style="margin-bottom: 0.5rem; font-size: 2.2rem;">Welcome back, {{ username }}!</h2>
+        <p style="color: var(--text-muted); font-size: 1.05rem;">This is your Learning Dashboard. Track your past quiz performances.</p>
+    </div>
+    
+    <a href="{{ url_for('category') }}" class="btn-primary" style="width: auto; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; border-radius: 12px;">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Quiz
+    </a>
+</div>
+
+<div>
+    <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem;">Your Recent Activity</h3>
+    {% if data %}
+    
+    <!-- Chart Container -->
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <canvas id="performanceChart" height="100"></canvas>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {{ chart_labels | tojson | safe }},
+                    datasets: [{
+                        label: 'Quiz Score (%)',
+                        data: {{ chart_data | tojson | safe }},
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ec4899',
+                        pointBorderColor: '#fff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 13 },
+                            bodyFont: { size: 14, weight: 'bold' },
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) { return context.parsed.y + '%'; }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { callback: function(value) { return value + '%'; } }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    
+    <table class="dashboard-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Score</th>
+                <th>Total</th>
+                <th>Performance</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td style="color: white; font-size: 0.95rem;"><i class="fa-regular fa-calendar" style="color: var(--text-muted); margin-right: 0.5rem;"></i> {{ row[3] }}</td>
+                <td style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);">{{ row[1] }}</td>
+                <td style="color: var(--text-muted);">{{ row[2] }}</td>
+                <td>
+                    {% if row[2] > 0 and (row[1] / row[2]) >= 0.7 %}
+                        <span class="score-badge score-good"><i class="fa-solid fa-check-circle" style="margin-right: 0.25rem;"></i> Great Job</span>
+                    {% else %}
+                        <span class="score-badge score-bad"><i class="fa-solid fa-triangle-exclamation" style="margin-right: 0.25rem;"></i> Needs Practice</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('view_result', result_id=row[0]) }}" class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; width: auto; display: inline-block; text-decoration: none;"><i class="fa-solid fa-eye" style="margin-right: 4px;"></i> View Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="padding: 4rem 2rem; text-align: center; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">
+        <div style="width: 80px; height: 80px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+            <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; color: var(--primary);"></i>
+        </div>
+        <h3 style="color: white; margin-bottom: 0.5rem; font-size: 1.3rem;">No Results Yet</h3>
+        <p style="margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">You haven't taken any quizzes yet. Generate a new AI quiz on any topic to get started and see your insights here.</p>
+        <a href="{{ url_for('category') }}" class="btn-primary" style="display: inline-block; width: auto; text-decoration: none; padding: 0.8rem 1.5rem;">
+            <i class="fa-solid fa-play" style="margin-right: 0.5rem;"></i> Start Your First Quiz
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

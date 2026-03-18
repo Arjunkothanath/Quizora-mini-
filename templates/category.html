@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="category-header">
+    <h2>Select a Topic</h2>
+    <p>What would you like to learn today?</p>
+</div>
+
+<form id="quizForm" method="POST">
+    <div class="form-group">
+        <label class="form-label">Custom Topic</label>
+        <input type="text" id="topicInput" name="category" class="form-input" placeholder="E.g., Python Programming, World War II, Space Exploration" required>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Difficulty Level</label>
+        <div style="position: relative;">
+            <select name="difficulty" class="form-input" required style="cursor: pointer; appearance: none; -webkit-appearance: none; width: 100%;">
+                <option value="Easy" style="background: var(--bg-dark);">🔰 Easy</option>
+                <option value="Medium" style="background: var(--bg-dark);" selected>⚡ Medium</option>
+                <option value="Hard" style="background: var(--bg-dark);">🔥 Hard</option>
+                <option value="Expert" style="background: var(--bg-dark);">💀 Expert</option>
+            </select>
+            <i class="fa-solid fa-chevron-down" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;"></i>
+        </div>
+    </div>
+
+    <button type="submit" id="generateBtn" class="btn-primary" disabled style="opacity: 0.5; cursor: not-allowed;">Generate & Start Quiz</button>
+</form>
+
+<div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--text-light);">
+    <div style="width: 60px; height: 60px; border: 4px solid var(--glass-border); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 24px;"></div>
+    <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; margin-bottom: 12px; font-weight: 700;">Crafting Your Quiz</h2>
+    <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 400px; padding: 0 20px;">Our AI is analyzing the topic and generating custom questions. This might take a few seconds.</p>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const topicInput = document.getElementById('topicInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const form = document.getElementById('quizForm');
+        const overlay = document.getElementById('loadingOverlay');
+
+        topicInput.addEventListener('input', function() {
+            if (topicInput.value.trim().length > 0) {
+                generateBtn.disabled = false;
+                generateBtn.style.opacity = '1';
+                generateBtn.style.cursor = 'pointer';
+            } else {
+                generateBtn.disabled = true;
+                generateBtn.style.opacity = '0.5';
+                generateBtn.style.cursor = 'not-allowed';
+            }
+        });
+
+        form.addEventListener('submit', function() {
+            // Show overlay upon form submission
+            overlay.style.display = 'flex';
+            generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+        });
+    });
+</script>
+{% endblock %}

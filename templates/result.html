@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block container_class %}wide-container{% endblock %}
+
+{% block content %}
+<div class="result-container">
+    <h2>Quiz Results</h2>
+    <p>Here is how you performed on this challenge.</p>
+
+    {% set percentage = (score / total * 100) if total > 0 else 0 %}
+    <div class="score-circle" style="--percentage: {{ percentage }};">
+        <div class="score-text">
+            {{ score }}/{{ total }}
+        </div>
+    </div>
+
+    <div class="result-actions">
+        <a href="{{ url_for('category') }}" class="btn-primary" style="width: auto;">Try Another Topic</a>
+        <a href="{{ url_for('dashboard') }}" class="nav-btn logout-btn" style="background: rgba(255,255,255,0.1); color: white; border-color: rgba(255,255,255,0.2);">View Dashboard</a>
+    </div>
+</div>
+
+<div style="margin-top: 3rem;">
+    <h3>Detailed Review</h3>
+    <table class="details-table">
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Your Answer</th>
+                <th>Correct Answer</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in range(total) %}
+            <tr>
+                <td>
+                    {{ questions[i]['question'] }}
+                    {% if questions[i].get('code_snippet') %}
+                    <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; font-family: 'Consolas', monospace; overflow-x: auto; margin: 0.5rem 0; text-align: left; white-space: pre-wrap; font-size: 0.85rem; color: #e2e8f0; border: 1px solid var(--glass-border);">
+{{ questions[i].get('code_snippet') }}
+                    </div>
+                    {% endif %}
+                </td>
+                <td class="{{ 'correct-text' if user_answers[i] == questions[i]['answer'] else 'wrong-text' }}">
+                    {{ user_answers[i] if user_answers[i] else 'Not Answered' }}
+                </td>
+                <td class="correct-text">{{ questions[i]['answer'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
